@@ -12,6 +12,10 @@ on:
       enforce-analyze:
         type: boolean
         default: true
+      analyze-arguments:
+        description: Additional flutter analyze arguments
+        type: string
+        default: ''
       run-tests:
         type: boolean
         default: true
@@ -34,6 +38,6 @@ jobs:
           cache: true
       - run: flutter pub get
       - if: inputs.enforce-analyze
-        run: flutter analyze
+        run: flutter analyze ${{ inputs.analyze-arguments }}
       - if: inputs.run-tests
         run: flutter test

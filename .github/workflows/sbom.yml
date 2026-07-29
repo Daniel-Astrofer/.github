@@ -20,3 +20,8 @@ jobs:
           path: ${{ inputs.path }}
           format: spdx-json
           output-file: sbom.spdx.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: sbom-spdx
+          path: sbom.spdx.json
+          if-no-files-found: error
