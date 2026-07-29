@@ -30,9 +30,9 @@ The archived monorepo is never a build input.
 - [x] Remove absolute monorepo paths from active deployment manifests.
 - [x] Add guardrails against new monorepo path dependencies.
 - [x] Validate isolated builds and cross-repository compatibility.
-- [ ] Organize local clones under `workspaces/kerosene`.
-- [ ] Move the monorepo clone to `archive` and mark it read-only locally.
-- [ ] Open independent pull requests and record validation evidence.
+- [x] Organize local clones under `workspaces/kerosene`.
+- [x] Move the monorepo clone to `archive` and mark it read-only locally.
+- [x] Open independent pull requests and record validation evidence.
 
 ## Canonical local workspace
 
@@ -60,3 +60,18 @@ read source files from the archived monorepo.
 removed only after version `0.1.0` is published and the Java build consumes the
 artifact. This prevents a path-only reorganization from breaking isolated
 builds.
+
+## Delivery evidence
+
+| Repository | Pull request | Result |
+|---|---:|---|
+| `kerosene-core` | [#3](https://github.com/Daniel-Astrofer/kerosene-core/pull/3) | Merged; Java, security and compatibility checks passed |
+| `kerosene-vault` | [#6](https://github.com/Daniel-Astrofer/kerosene-vault/pull/6) | Merged; Rust, security and compatibility checks passed |
+| `kerosene-node` | [#5](https://github.com/Daniel-Astrofer/kerosene-node/pull/5) | Merged; security and compatibility checks passed |
+| `kerosene-contracts` | [#3](https://github.com/Daniel-Astrofer/kerosene-contracts/pull/3) | Merged; Java, security and compatibility checks passed |
+| `kerosene-clients` | [#4](https://github.com/Daniel-Astrofer/kerosene-clients/pull/4) | Merged; Flutter, security and compatibility checks passed |
+| `kerosene-deploy` | [#4](https://github.com/Daniel-Astrofer/kerosene-deploy/pull/4) | Merged; architecture, security and compatibility checks passed |
+
+After moving the clones, `scripts/check-polyrepo-workspace.sh`,
+`scripts/check_architecture_guardrails.sh`, and `bash infra/test.sh` all passed
+from the canonical Deploy location.
