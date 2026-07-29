@@ -126,7 +126,7 @@ jobs:
             local consumer_manifest="$2"
             local consumer="$3"
 
-            if ! jq -e \
+            if ! jq -n -e \
               --slurpfile provider "${provider_manifest}" \
               --slurpfile consumer "${consumer_manifest}" '
                 [
