@@ -1,0 +1,22 @@
+name: Reusable Container Build
+
+on:
+  workflow_call:
+    inputs:
+      context:
+        type: string
+        default: .
+      dockerfile:
+        type: string
+        default: Dockerfile
+
+permissions:
+  contents: read
+
+jobs:
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image without publishing
+        run: docker build --file "${{ inputs.dockerfile }}" "${{ inputs.context }}"

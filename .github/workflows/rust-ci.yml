@@ -1,0 +1,40 @@
+name: Reusable Rust CI
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: .
+      production-features:
+        type: string
+        default: production
+      enforce-format:
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Rust components
+        run: |
+          rustup set profile minimal
+          rustup component add clippy rustfmt
+      - name: Check formatting
+        if: inputs.enforce-format
+        run: cargo fmt --check
+      - name: Check default features
+        run: cargo check
+      - name: Check production features
+        if: inputs.production-features != ''
+        run: cargo check --no-default-features --features "${{ inputs.production-features }}"
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D clippy::correctness -D clippy::suspicious

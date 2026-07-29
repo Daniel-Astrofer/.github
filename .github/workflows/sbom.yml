@@ -1,0 +1,22 @@
+name: Reusable SBOM
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        type: string
+        default: .
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: anchore/sbom-action@v0
+        with:
+          path: ${{ inputs.path }}
+          format: spdx-json
+          output-file: sbom.spdx.json

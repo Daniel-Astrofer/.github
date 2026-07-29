@@ -1,0 +1,22 @@
+name: Reusable Release Attestation
+
+on:
+  workflow_call:
+    inputs:
+      subject-path:
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ${{ inputs.subject-path }}
