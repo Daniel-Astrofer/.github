@@ -8,7 +8,14 @@ on:
         default: .
       gradle-arguments:
         type: string
-        default: test
+        default: check
+      run-dependency-audit:
+        type: boolean
+        default: false
+    secrets:
+      nvd-api-key:
+        description: Optional NVD API key used by OWASP Dependency-Check
+        required: false
 
 permissions:
   contents: read
@@ -28,3 +35,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Run Gradle verification
         run: ./gradlew ${{ inputs.gradle-arguments }} --no-daemon
+      - name: Audit dependency vulnerabilities
+        if: inputs.run-dependency-audit
+        env:
+          NVD_API_KEY: ${{ secrets.nvd-api-key }}
+        run: ./gradlew dependencyCheckAnalyze --no-daemon

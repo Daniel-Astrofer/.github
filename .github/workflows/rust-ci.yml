@@ -12,6 +12,23 @@ on:
       enforce-format:
         type: boolean
         default: true
+      test-arguments:
+        description: Arguments passed to cargo test
+        type: string
+        default: --workspace --all-features --locked
+      clippy-arguments:
+        description: Arguments passed to cargo clippy before lint levels
+        type: string
+        default: --workspace --all-targets --all-features
+      run-audit:
+        type: boolean
+        default: true
+      run-deny:
+        type: boolean
+        default: true
+      run-machete:
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -37,4 +54,29 @@ jobs:
         if: inputs.production-features != ''
         run: cargo check --no-default-features --features "${{ inputs.production-features }}"
       - name: Clippy
-        run: cargo clippy --all-targets -- -D clippy::correctness -D clippy::suspicious
+        run: cargo clippy ${{ inputs.clippy-arguments }} -- -D clippy::correctness -D clippy::suspicious
+      - name: Test
+        run: cargo test ${{ inputs.test-arguments }}
+      - name: Install dependency security tools
+        if: inputs.run-audit || inputs.run-machete
+        run: |
+          if [[ "${{ inputs.run-audit }}" == "true" ]]; then
+            cargo install cargo-audit --locked
+          fi
+          if [[ "${{ inputs.run-machete }}" == "true" ]]; then
+            cargo install cargo-machete --locked
+          fi
+      - name: Audit dependency vulnerabilities
+        if: inputs.run-audit
+        run: cargo audit
+      - name: Enforce dependency advisories and sources
+        if: inputs.run-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: ${{ inputs.working-directory }}/Cargo.toml
+          command: check
+          arguments: --all-features
+          command-arguments: advisories sources
+      - name: Detect unused dependencies
+        if: inputs.run-machete
+        run: cargo machete
