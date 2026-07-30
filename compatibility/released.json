@@ -1,24 +1,24 @@
 {
   "schema_version": 1,
   "baseline": "released",
-  "status": "bootstrap",
+  "status": "production-candidate",
   "updated_at": "2026-07-29",
   "components": {
     "core": {
       "repository": "Daniel-Astrofer/kerosene-core",
-      "ref": "b5469fca60146092d323fec14e14cbc0875ded6b"
+      "ref": "a598acd1d81ef5b9d6a59bc03d2b2e06ddfef90f"
     },
     "vault": {
       "repository": "Daniel-Astrofer/kerosene-vault",
-      "ref": "80bd185d5c66681b9ccc6bc525974ef00d7d75f3"
+      "ref": "55db7d6b43e7ea685ac63c8b2b688e7cf17d5f28"
     },
     "node": {
       "repository": "Daniel-Astrofer/kerosene-node",
-      "ref": "c133192c4e6998e66532d18a8558fd1dc07458d9"
+      "ref": "541e15474c5a7e9edefedb3d8e1180b832b563cd"
     },
     "contracts": {
       "repository": "Daniel-Astrofer/kerosene-contracts",
-      "ref": "24f98fb079f1b61af782b02f4134b383e1c89238"
+      "ref": "f1f85c0996a6a24965f67eec52d649e5daa15f15"
     },
     "clients": {
       "repository": "Daniel-Astrofer/kerosene-clients",
