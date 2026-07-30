@@ -29,9 +29,21 @@ on:
       run-machete:
         type: boolean
         default: true
+      cache-key:
+        description: Cache key for Cargo registry and build artifacts
+        type: string
+        default: cargo-cache
+      concurrency-group:
+        description: Concurrency group to prevent duplicate runs
+        type: string
+        default: ''
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ inputs.concurrency-group }}${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   rust:
@@ -41,6 +53,16 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - uses: actions/checkout@v7
+      - name: Cache Cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ inputs.working-directory }}/target
+          key: ${{ inputs.cache-key }}-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}-${{ runner.os }}
+          restore-keys: |
+            ${{ inputs.cache-key }}-${{ runner.os }}-
       - name: Install Rust components
         run: |
           rustup set profile minimal

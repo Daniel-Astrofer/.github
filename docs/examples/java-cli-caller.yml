@@ -1,0 +1,19 @@
+# Example: Calling admin-cli-ci.yml for a Java CLI (kerosene-jctl)
+#
+# Consumers must pin the reusable workflow to an immutable commit SHA.
+# Replace <sha> with the actual commit hash from the .github repository.
+
+name: kerosene-jctl CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  jctl:
+    uses: Daniel-Astrofer/.github/.github/workflows/admin-cli-ci.yml@abc123def456abc123def456abc123def456abc1
+    with:
+      language: java
+      package: kerosene-jctl

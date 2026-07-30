@@ -19,6 +19,20 @@ permissions:
   contents: read
 
 jobs:
+  actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install Actionlint
+        run: |
+          bash <(curl -sS https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          echo "${HOME}/bin" >> "${GITHUB_PATH}"
+      - name: Run Actionlint
+        run: actionlint -color
+
   validate-input:
     runs-on: ubuntu-latest
     steps:
@@ -31,9 +45,36 @@ jobs:
             *) echo "language must be rust or java" >&2; exit 2 ;;
           esac
 
+      - name: Validate package
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          if [[ -z "${PACKAGE}" ]]; then
+            echo "::error::package input must not be empty"
+            exit 2
+          fi
+
+      - name: Validate language-package consistency
+        env:
+          LANGUAGE: ${{ inputs.language }}
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          case "${LANGUAGE}" in
+            rust)
+              if [[ ! "${PACKAGE}" =~ ^kerosene- ]]; then
+                echo "::warning::Rust package name '${PACKAGE}' does not follow kerosene- prefix convention"
+              fi
+              ;;
+            java)
+              if [[ ! "${PACKAGE}" =~ ^kerosene- ]]; then
+                echo "::warning::Java project name '${PACKAGE}' does not follow kerosene- prefix convention"
+              fi
+              ;;
+          esac
+
   rust-cli:
     if: inputs.language == 'rust'
-    needs: validate-input
+    needs: [validate-input, actionlint]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,7 +94,7 @@ jobs:
 
   java-cli:
     if: inputs.language == 'java'
-    needs: validate-input
+    needs: [validate-input, actionlint]
     runs-on: ubuntu-latest
     defaults:
       run:

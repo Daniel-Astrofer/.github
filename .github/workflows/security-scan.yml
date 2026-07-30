@@ -11,10 +11,23 @@ on:
         description: Run Semgrep's security audit rules
         type: boolean
         default: true
+      run-osv:
+        description: Run OSV-Scanner for vulnerability scanning
+        type: boolean
+        default: true
+      run-zizmor:
+        description: Run Zizmor for GitHub Actions security audit
+        type: boolean
+        default: true
+      run-trivy:
+        description: Run Trivy filesystem scan
+        type: boolean
+        default: true
 
 permissions:
   contents: read
   pull-requests: read
+  security-events: write
 
 jobs:
   secrets:
@@ -57,6 +70,9 @@ jobs:
       contents: read
       security-events: write
       packages: read
+    strategy:
+      matrix:
+        language: [${{ inputs.codeql-language }}]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -66,3 +82,59 @@ jobs:
           languages: ${{ inputs.codeql-language }}
       - uses: github/codeql-action/autobuild@v4
       - uses: github/codeql-action/analyze@v4
+
+  osv-scanner:
+    name: OSV-Scanner
+    if: inputs.run-osv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+      - name: Install OSV-Scanner
+        run: go install github.com/google/osv-scanner/cmd/osv-scanner@v1
+      - name: Scan for vulnerabilities
+        run: osv-scanner --recursive .
+
+  zizmor:
+    name: Zizmor
+    if: inputs.run-zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Zizmor
+        run: pip install zizmor
+      - name: Audit GitHub Actions
+        run: zizmor .
+
+  trivy:
+    name: Trivy filesystem scan
+    if: inputs.run-trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: aquasecurity/trivy-action@v0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: 1
+          severity: HIGH,CRITICAL
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
