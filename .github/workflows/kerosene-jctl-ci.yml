@@ -1,0 +1,22 @@
+name: kerosene-jctl CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kerosene-jctl/**'
+      - '.github/workflows/kerosene-jctl-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'kerosene-jctl/**'
+      - '.github/workflows/kerosene-jctl-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    uses: Daniel-Astrofer/.github/.github/workflows/admin-cli-ci.yml@main
+    with:
+      language: java
+      package: kerosene-jctl
+      working-directory: kerosene-jctl
