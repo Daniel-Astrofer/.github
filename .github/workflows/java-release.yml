@@ -45,7 +45,7 @@ jobs:
           java -version 2> dist/java-toolchain.txt
       - uses: anchore/sbom-action@v0
         with:
-          path: dist/${{ inputs.package }}.tar.gz
+          path: ${{ inputs.package }}/build/install/${{ inputs.package }}
           format: spdx-json
           output-file: dist/sbom.spdx.json
       - uses: sigstore/cosign-installer@v3
