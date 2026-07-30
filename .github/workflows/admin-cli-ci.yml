@@ -57,20 +57,20 @@ jobs:
           command-arguments: advisories sources
       - run: cargo machete
       - run: cargo build -p "${{ inputs.package }}" --release --locked
-      - name: Create checksum
-        run: sha256sum "target/release/${{ inputs.package }}" > "target/release/${{ inputs.package }}.sha256"
+      - name: Stage artifact and checksum
+        run: |
+          mkdir -p admin-cli-dist
+          install -m 0755 "target/release/${{ inputs.package }}" "admin-cli-dist/${{ inputs.package }}"
+          (cd admin-cli-dist && sha256sum "${{ inputs.package }}" > "${{ inputs.package }}.sha256")
       - uses: anchore/sbom-action@v0
         with:
-          path: ${{ inputs.working-directory }}/target/release/${{ inputs.package }}
+          path: ${{ inputs.working-directory }}/admin-cli-dist
           format: spdx-json
-          output-file: ${{ inputs.working-directory }}/target/release/${{ inputs.package }}.spdx.json
+          output-file: ${{ inputs.working-directory }}/admin-cli-dist/${{ inputs.package }}.spdx.json
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.package }}-${{ runner.os }}-${{ runner.arch }}
-          path: |
-            ${{ inputs.working-directory }}/target/release/${{ inputs.package }}
-            ${{ inputs.working-directory }}/target/release/${{ inputs.package }}.sha256
-            ${{ inputs.working-directory }}/target/release/${{ inputs.package }}.spdx.json
+          path: ${{ inputs.working-directory }}/admin-cli-dist
           if-no-files-found: error
 
   java-cli:
@@ -92,7 +92,7 @@ jobs:
       - run: sha256sum "${{ inputs.package }}.tar.gz" > "${{ inputs.package }}.tar.gz.sha256"
       - uses: anchore/sbom-action@v0
         with:
-          path: ${{ inputs.working-directory }}/${{ inputs.package }}.tar.gz
+          path: ${{ inputs.working-directory }}/${{ inputs.package }}/build/install/${{ inputs.package }}
           format: spdx-json
           output-file: ${{ inputs.working-directory }}/${{ inputs.package }}.spdx.json
       - uses: actions/upload-artifact@v6
