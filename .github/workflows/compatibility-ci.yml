@@ -39,7 +39,7 @@ jobs:
 
       - name: Check out compatibility policy
         if: inputs.baseline == 'released'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/.github
           ref: ${{ github.workflow_sha }}
@@ -85,13 +85,13 @@ jobs:
     continue-on-error: ${{ inputs.baseline == 'edge' }}
     steps:
       - name: Check out caller revision
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: caller
           persist-credentials: false
 
       - name: Check out compatibility policy
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/.github
           ref: ${{ github.workflow_sha }}
@@ -99,7 +99,7 @@ jobs:
           persist-credentials: false
 
       - name: Check out Core baseline
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/kerosene-core
           ref: ${{ needs.resolve.outputs.core }}
@@ -107,7 +107,7 @@ jobs:
           persist-credentials: false
 
       - name: Check out Vault baseline
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/kerosene-vault
           ref: ${{ needs.resolve.outputs.vault }}
@@ -115,7 +115,7 @@ jobs:
           persist-credentials: false
 
       - name: Check out Node baseline
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/kerosene-node
           ref: ${{ needs.resolve.outputs.node }}
@@ -123,7 +123,7 @@ jobs:
           persist-credentials: false
 
       - name: Check out Contracts baseline
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/kerosene-contracts
           ref: ${{ needs.resolve.outputs.contracts }}
@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
 
       - name: Check out Clients baseline
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Daniel-Astrofer/kerosene-clients
           ref: ${{ needs.resolve.outputs.clients }}
