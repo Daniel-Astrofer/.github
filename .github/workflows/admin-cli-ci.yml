@@ -154,11 +154,33 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy -p "${{ inputs.package }}" --all-targets -- -D warnings
       - run: cargo test -p "${{ inputs.package }}" --locked
+      - name: Install dependency verification tools
+        run: |
+          cargo install cargo-audit --locked
+          cargo install cargo-machete --locked
+      - run: cargo audit
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: ${{ inputs.working-directory }}/Cargo.toml
+          command: check
+          arguments: --all-features
+          command-arguments: advisories sources
+      - run: cargo machete
       - run: cargo build -p "${{ inputs.package }}" --release --locked
+      - name: Stage artifact and checksum
+        run: |
+          mkdir -p admin-cli-dist
+          install -m 0755 "target/release/${{ inputs.package }}" "admin-cli-dist/${{ inputs.package }}"
+          (cd admin-cli-dist && sha256sum "${{ inputs.package }}" > "${{ inputs.package }}.sha256")
+      - uses: anchore/sbom-action@v0
+        with:
+          path: ${{ inputs.working-directory }}/admin-cli-dist
+          format: spdx-json
+          output-file: ${{ inputs.working-directory }}/admin-cli-dist/${{ inputs.package }}.spdx.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ${{ inputs.package }}-${{ runner.os }}-${{ runner.arch }}
-          path: ${{ inputs.working-directory }}/target/release/${{ inputs.package }}
+          path: ${{ inputs.working-directory }}/admin-cli-dist
           if-no-files-found: error
 
   java-cli:
@@ -179,8 +201,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - run: ./gradlew ":${{ inputs.package }}:test" ":${{ inputs.package }}:installDist" --no-daemon
       - run: tar -C "${{ inputs.package }}/build/install" -czf "${{ inputs.package }}.tar.gz" "${{ inputs.package }}"
+      - run: sha256sum "${{ inputs.package }}.tar.gz" > "${{ inputs.package }}.tar.gz.sha256"
+      - uses: anchore/sbom-action@v0
+        with:
+          path: ${{ inputs.working-directory }}/${{ inputs.package }}/build/install/${{ inputs.package }}
+          format: spdx-json
+          output-file: ${{ inputs.working-directory }}/${{ inputs.package }}.spdx.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ${{ inputs.package }}-${{ runner.os }}-${{ runner.arch }}
-          path: ${{ inputs.working-directory }}/${{ inputs.package }}.tar.gz
+          path: |
+            ${{ inputs.working-directory }}/${{ inputs.package }}.tar.gz
+            ${{ inputs.working-directory }}/${{ inputs.package }}.tar.gz.sha256
+            ${{ inputs.working-directory }}/${{ inputs.package }}.spdx.json
           if-no-files-found: error

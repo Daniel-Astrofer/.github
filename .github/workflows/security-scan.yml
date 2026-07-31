@@ -70,9 +70,6 @@ jobs:
       contents: read
       security-events: write
       packages: read
-    strategy:
-      matrix:
-        language: [${{ inputs.codeql-language }}]
     steps:
       - uses: actions/checkout@v7
         with:
