@@ -155,7 +155,7 @@ jobs:
       - name: Generate binary SBOM
         uses: anchore/sbom-action@v0
         with:
-          path: dist
+          path: dist/${{ inputs.package }}
           format: spdx-json
           output-file: dist/sbom.spdx.json
 

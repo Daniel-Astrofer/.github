@@ -12,6 +12,14 @@ on:
       run-dependency-audit:
         type: boolean
         default: false
+      cache-key:
+        description: Cache key for Gradle caches
+        type: string
+        default: gradle-cache
+      concurrency-group:
+        description: Concurrency group to prevent duplicate runs
+        type: string
+        default: ''
     secrets:
       nvd-api-key:
         description: Optional NVD API key used by OWASP Dependency-Check
@@ -20,6 +28,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ inputs.concurrency-group }}${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   java:
     runs-on: ubuntu-latest
@@ -27,12 +39,32 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate working-directory
+        shell: bash
+        env:
+          WD: ${{ inputs.working-directory }}
+        run: |
+          if [[ "${WD}" == *".."* || "${WD}" == /* ]]; then
+            echo "::error::working-directory input validation failed: path traversal detected"
+            exit 1
+          fi
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - name: Cache Gradle caches
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ inputs.cache-key }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ runner.os }}
+          restore-keys: |
+            ${{ inputs.cache-key }}-${{ runner.os }}-
       - name: Run Gradle verification
         run: ./gradlew ${{ inputs.gradle-arguments }} --no-daemon
       - name: Audit dependency vulnerabilities

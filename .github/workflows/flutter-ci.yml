@@ -30,8 +30,19 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate working-directory
+        shell: bash
+        env:
+          WD: ${{ inputs.working-directory }}
+        run: |
+          if [[ "${WD}" == *".."* || "${WD}" == /* ]]; then
+            echo "::error::working-directory input validation failed: path traversal detected"
+            exit 1
+          fi
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ inputs.flutter-version }}
           channel: stable
