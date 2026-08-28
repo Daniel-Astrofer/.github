@@ -24,6 +24,12 @@ The optional `nvd-api-key` secret is only a public-vulnerability-feed API key;
 Java callers should map a repository `NVD_API_KEY` secret to avoid NVD rate
 limits.
 
+## Architecture and production readiness
+
+- [Architecture and service communication](docs/ARCHITECTURE.md)
+- [Fork and production-readiness checklist](docs/PRODUCTION_READINESS.md)
+- [Multi-agent restructuring plan](docs/RESTRUCTURING_PLAN.md)
+
 ## Cross-repository compatibility
 
 Each Kerosene repository owns a `compatibility/kerosene.json` manifest. Contracts

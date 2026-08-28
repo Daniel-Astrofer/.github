@@ -11,7 +11,11 @@ assumptions inherited from the monorepo.
 
 | Repository | Canonical source |
 |---|---|
-| `kerosene-core` | Auth, KFE, shared Java and rail adapters |
+| `kerosene-core` | Auth, sessions, notifications and public gateway |
+| `kerosene-kfe` | Ledger, wallets, reconciliation and financial execution |
+| `kerosene-shared` | Neutral Java runtime utilities |
+| `kerosene-rails` | Bitcoin Core and LND adapters |
+| `kerosene-admin` | Operator-facing administrative clients |
 | `kerosene-vault` | Vault Rust domain, signer and custody scripts |
 | `kerosene-node` | Identity, discovery, membership and consensus |
 | `kerosene-contracts` | Protocol schemas and generated artifacts |
@@ -40,11 +44,15 @@ The archived monorepo is never a build input.
 workspaces/kerosene/
 ├── services/
 │   ├── kerosene-core/
+│   ├── kerosene-kfe/
+│   ├── kerosene-rails/
 │   ├── kerosene-node/
 │   └── kerosene-vault/
 ├── platform/
 │   ├── kerosene-clients/
 │   ├── kerosene-contracts/
+│   ├── kerosene-shared/
+│   ├── kerosene-admin/
 │   ├── kerosene-deploy/
 │   └── kerosene-github/
 └── archive/
@@ -56,10 +64,10 @@ read source files from the archived monorepo.
 
 ## Contracts transition
 
-`kerosene-contracts` is the canonical source. The Core compatibility module is
-removed only after version `0.1.0` is published and the Java build consumes the
-artifact. This prevents a path-only reorganization from breaking isolated
-builds.
+`kerosene-contracts` is the canonical source. Core consumes it through a
+Gradle composite build; the former copied compatibility module was removed.
+Production still requires publishing and pinning an immutable artifact instead
+of the current snapshot coordinate.
 
 ## Delivery evidence
 
