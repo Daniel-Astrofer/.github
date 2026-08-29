@@ -29,6 +29,8 @@ limits.
 - [Architecture and service communication](docs/ARCHITECTURE.md)
 - [Fork and production-readiness checklist](docs/PRODUCTION_READINESS.md)
 - [Multi-agent restructuring plan](docs/RESTRUCTURING_PLAN.md)
+- [Secure inter-service implementation plan (Português)](docs/pt-BR/PLANO_IMPLEMENTACAO_COMUNICACAO_SEGURA.md)
+- [Secure inter-service normative plan (English)](docs/en/SECURE_INTERSERVICE_IMPLEMENTATION_PLAN.md)
 
 ## Cross-repository compatibility
 
