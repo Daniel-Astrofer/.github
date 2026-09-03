@@ -1,3 +1,12 @@
+<!--
+Kerosene documentation metadata
+status: review-required
+audience: internal
+owner: .github
+source_of_truth: .github
+last_reviewed: 2026-09-03
+-->
+
 # Kerosene shared GitHub configuration
 
 Reusable CI workflows and repository policy for the Kerosene polyrepo.
@@ -29,6 +38,12 @@ limits.
 - [Architecture and service communication](docs/ARCHITECTURE.md)
 - [Fork and production-readiness checklist](docs/PRODUCTION_READINESS.md)
 - [Multi-agent restructuring plan](docs/RESTRUCTURING_PLAN.md)
+- [Platform documentation catalog](docs/PLATFORM_DOCUMENTATION_CATALOG.md)
+- [Documentation governance](docs/DOCUMENTATION_GOVERNANCE.md)
+- [Architecture ownership matrix](../ARCHITECTURE_OWNERSHIP_MATRIX.md)
+- [Contract compatibility matrix](../CONTRACT_COMPATIBILITY_MATRIX.md)
+- [Documentation exposure matrix](docs/EXPOSURE_MATRIX.md)
+- [Documentation templates](docs/DOCUMENTATION_TEMPLATES.md)
 - [Secure inter-service implementation plan (Português)](docs/pt-BR/PLANO_IMPLEMENTACAO_COMUNICACAO_SEGURA.md)
 - [Secure inter-service normative plan (English)](docs/en/SECURE_INTERSERVICE_IMPLEMENTATION_PLAN.md)
 

@@ -1,3 +1,12 @@
+<!--
+Kerosene documentation metadata
+status: review-required
+audience: internal
+owner: .github
+source_of_truth: .github
+last_reviewed: 2026-09-03
+-->
+
 # Secure inter-service implementation plan
 
 Status: normative target; not a statement of current readiness.

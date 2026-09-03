@@ -1,3 +1,12 @@
+<!--
+Kerosene documentation metadata
+status: review-required
+audience: internal
+owner: .github
+source_of_truth: .github
+last_reviewed: 2026-09-03
+-->
+
 # Admin CLI reusable CI
 
 Consumers call `admin-cli-ci.yml` pinned to a reviewed commit SHA. The workflow

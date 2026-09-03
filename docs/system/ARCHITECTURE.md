@@ -1,3 +1,12 @@
+<!--
+Kerosene documentation metadata
+status: review-required
+audience: internal
+owner: .github
+source_of_truth: .github
+last_reviewed: 2026-09-03
+-->
+
 # Kerosene: arquitetura e comunicação entre serviços
 
 Este documento descreve o estado observado nos repositórios polyrrepo. Ele é
@@ -78,21 +87,19 @@ O runtime ativo não declara HashiCorp Vault, porta `8200` ou o antigo serviço
 Raft. Se um gerenciador de secrets for adotado no futuro, ele continuará fora
 do plano de custody e nunca será o canal KFE → Vault Mesh.
 
-## Perfis
+## Runtime publicado
 
-| Perfil | Transporte/credencial | Custódia | Uso |
-|---|---|---|---|
-| local-full/lab | HTTP ou token estático | `dealer_lab`/stubs permitidos conforme compose | desenvolvimento e visualização |
-| staging | HTTPS + mTLS; Tor para mesh quando configurado | `distributed_wire`; stubs somente explicitamente marcados | ensaio operacional |
-| production | HTTPS + mTLS, discovery autenticado e imagens imutáveis | feature `production`, sem dealer/stub/fallback | go-live |
-
-Nunca promover configurações de `local-full` para staging/produção: elas usam
-`KFE_VAULTMESH_REQUIRE_MTLS=false`, HTTP e token de laboratório.
+Deploy publica um único contrato operacional: produção controlada em Bitcoin
+`testnet3`, com overlay privado, imagens imutáveis, Tor, mTLS e evidência
+assinada. Modos lab/staging permanecem somente como doubles e testes dentro do
+repositório que os possui; eles não são entrypoints públicos de Deploy e nunca
+podem ser promovidos.
 
 ## Fonte de verdade
 
 - Contratos: `kerosene-contracts` e seus manifests de compatibilidade.
-- Fiação/runtime: `kerosene-deploy/infra/kubernetes` e os compose nomeados.
+- Fiação/runtime: base pública e gate em `kerosene-deploy/infra/`; o overlay
+  concreto pertence ao checkout privado de operações.
 - Cliente Vault: `kerosene-kfe` e propriedades `kfe-service-vaultmesh-*`.
 - Regras de segurança Vault: `kerosene-vault/AGENTS.md`, configuração de
   bootstrap e testes focados.
