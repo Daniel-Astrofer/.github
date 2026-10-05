@@ -19,7 +19,7 @@ permissions:
 jobs:
   resolve:
     name: Resolve ${{ inputs.baseline }} baseline
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       core: ${{ steps.refs.outputs.core }}
       vault: ${{ steps.refs.outputs.vault }}
@@ -81,7 +81,7 @@ jobs:
   compatibility:
     name: Compatibility ${{ inputs.baseline }}
     needs: resolve
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: ${{ inputs.baseline == 'edge' }}
     steps:
       - name: Check out caller revision
@@ -101,7 +101,7 @@ jobs:
       - name: Check out Core baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Daniel-Astrofer/kerosene-core
+          repository: Daniel-Astrofer/users-authentication
           ref: ${{ needs.resolve.outputs.core }}
           path: ecosystem/core
           persist-credentials: false
@@ -109,7 +109,7 @@ jobs:
       - name: Check out Vault baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Daniel-Astrofer/kerosene-vault
+          repository: Daniel-Astrofer/vault
           ref: ${{ needs.resolve.outputs.vault }}
           path: ecosystem/vault
           persist-credentials: false
@@ -117,7 +117,7 @@ jobs:
       - name: Check out Node baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Daniel-Astrofer/kerosene-node
+          repository: Daniel-Astrofer/discoveryng-node
           ref: ${{ needs.resolve.outputs.node }}
           path: ecosystem/node
           persist-credentials: false
@@ -125,7 +125,7 @@ jobs:
       - name: Check out Contracts baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Daniel-Astrofer/kerosene-contracts
+          repository: Daniel-Astrofer/contracts
           ref: ${{ needs.resolve.outputs.contracts }}
           path: ecosystem/contracts
           persist-credentials: false
@@ -133,7 +133,7 @@ jobs:
       - name: Check out Clients baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: Daniel-Astrofer/kerosene-clients
+          repository: Daniel-Astrofer/clients
           ref: ${{ needs.resolve.outputs.clients }}
           path: ecosystem/clients
           persist-credentials: false
