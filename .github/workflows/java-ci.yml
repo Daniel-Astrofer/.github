@@ -13,7 +13,7 @@ on:
         type: boolean
         default: false
       cache-key:
-        description: Cache key for Gradle caches
+        description: Deprecated compatibility input; Gradle setup manages caching
         type: string
         default: gradle-cache
       concurrency-group:
@@ -34,7 +34,8 @@ concurrency:
 
 jobs:
   java:
-    runs-on: ubuntu-latest
+    name: Verify Java project
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
@@ -44,6 +45,7 @@ jobs:
           persist-credentials: false
       - name: Validate working-directory
         shell: bash
+        working-directory: .
         env:
           WD: ${{ inputs.working-directory }}
         run: |
@@ -56,17 +58,12 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
-      - name: Cache Gradle caches
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ inputs.cache-key }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ runner.os }}
-          restore-keys: |
-            ${{ inputs.cache-key }}-${{ runner.os }}-
       - name: Run Gradle verification
-        run: ./gradlew ${{ inputs.gradle-arguments }} --no-daemon
+        env:
+          GRADLE_ARGUMENTS: ${{ inputs.gradle-arguments }}
+        run: |
+          read -r -a arguments <<< "${GRADLE_ARGUMENTS}"
+          ./gradlew "${arguments[@]}" --no-daemon
       - name: Audit dependency vulnerabilities
         if: inputs.run-dependency-audit
         env:

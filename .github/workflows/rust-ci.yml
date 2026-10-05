@@ -47,14 +47,27 @@ concurrency:
 
 jobs:
   rust:
-    runs-on: ubuntu-latest
+    name: Verify Rust workspace
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate working-directory
+        shell: bash
+        working-directory: .
+        env:
+          WD: ${{ inputs.working-directory }}
+        run: |
+          if [[ "${WD}" == *".."* || "${WD}" == /* ]]; then
+            echo "::error::working-directory input validation failed: path traversal detected"
+            exit 1
+          fi
       - name: Cache Cargo registry and build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: |
             ~/.cargo/registry
@@ -74,26 +87,39 @@ jobs:
         run: cargo check
       - name: Check production features
         if: inputs.production-features != ''
-        run: cargo check --no-default-features --features "${{ inputs.production-features }}"
+        env:
+          PRODUCTION_FEATURES: ${{ inputs.production-features }}
+        run: cargo check --no-default-features --features "${PRODUCTION_FEATURES}"
       - name: Clippy
-        run: cargo clippy ${{ inputs.clippy-arguments }} -- -D clippy::correctness -D clippy::suspicious
+        env:
+          CLIPPY_ARGUMENTS: ${{ inputs.clippy-arguments }}
+        run: |
+          read -r -a arguments <<< "${CLIPPY_ARGUMENTS}"
+          cargo clippy "${arguments[@]}" -- -D clippy::correctness -D clippy::suspicious
       - name: Test
-        run: cargo test ${{ inputs.test-arguments }}
+        env:
+          TEST_ARGUMENTS: ${{ inputs.test-arguments }}
+        run: |
+          read -r -a arguments <<< "${TEST_ARGUMENTS}"
+          cargo test "${arguments[@]}"
       - name: Install dependency security tools
         if: inputs.run-audit || inputs.run-machete
+        env:
+          RUN_AUDIT: ${{ inputs.run-audit }}
+          RUN_MACHETE: ${{ inputs.run-machete }}
         run: |
-          if [[ "${{ inputs.run-audit }}" == "true" ]]; then
-            cargo install cargo-audit --locked
+          if [[ "${RUN_AUDIT}" == "true" ]]; then
+            cargo install cargo-audit --version 0.22.2 --locked
           fi
-          if [[ "${{ inputs.run-machete }}" == "true" ]]; then
-            cargo install cargo-machete --locked
+          if [[ "${RUN_MACHETE}" == "true" ]]; then
+            cargo install cargo-machete --version 0.9.2 --locked
           fi
       - name: Audit dependency vulnerabilities
         if: inputs.run-audit
         run: cargo audit
       - name: Enforce dependency advisories and sources
         if: inputs.run-deny
-        uses: EmbarkStudios/cargo-deny-action@v2
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
         with:
           manifest-path: ${{ inputs.working-directory }}/Cargo.toml
           command: check

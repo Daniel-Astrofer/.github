@@ -1,0 +1,29 @@
+name: Documentation gate
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'scripts/check-documentation.sh'
+      - 'scripts/normalize-documentation-metadata.sh'
+      - '.github/workflows/documentation-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  documentation:
+    name: Validate documentation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check documentation in this repository
+        run: bash scripts/check-documentation.sh --repo .

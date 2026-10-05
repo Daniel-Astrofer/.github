@@ -15,10 +15,23 @@ permissions:
 
 jobs:
   container:
-    runs-on: ubuntu-latest
+    name: Build container image
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Build image without publishing
-        run: docker build --file "${{ inputs.dockerfile }}" "${{ inputs.context }}"
+        env:
+          BUILD_CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+        run: |
+          for path in "${BUILD_CONTEXT}" "${DOCKERFILE}"; do
+            if [[ "${path}" == /* || "${path}" =~ (^|/)\.\.(/|$) || "${path}" == *$'\n'* ]]; then
+              echo "::error::container path must remain inside the checkout"
+              exit 2
+            fi
+          done
+          [[ -d "${BUILD_CONTEXT}" ]] || { echo "::error::missing context: ${BUILD_CONTEXT}"; exit 2; }
+          [[ -f "${DOCKERFILE}" ]] || { echo "::error::missing Dockerfile: ${DOCKERFILE}"; exit 2; }
+          docker build --file "${DOCKERFILE}" "${BUILD_CONTEXT}"

@@ -1,4 +1,13 @@
-# Kerosene repository workspace
+<!--
+Kerosene documentation metadata
+status: current
+audience: internal
+owner: .github
+source_of_truth: .github
+last_reviewed: 2026-09-03
+-->
+
+# What is Kerosene
 
 The Kerosene codebase is maintained as independent repositories. The local
 workspace may contain them as sibling directories, but there is no source
