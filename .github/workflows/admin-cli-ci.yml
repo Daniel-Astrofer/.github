@@ -21,7 +21,7 @@ permissions:
 jobs:
   actionlint:
     name: Actionlint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -41,7 +41,8 @@ jobs:
         run: actionlint -color
 
   validate-input:
-    runs-on: ubuntu-latest
+    name: Validate workflow inputs
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate language
         env:
@@ -90,27 +91,25 @@ jobs:
 
   osv-scan:
     name: OSV-Scanner
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
-      actions: read
-      security-events: write
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Scan for vulnerabilities
-        uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@8dc09193bb540e09b23da07ad7e30bd33bf87018 # v2.3.8
         with:
           scan-args: |-
             -r
             --skip-git
             ./
-            --fail-on-vuln=false
 
   zizmor:
     name: Zizmor SAST
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -122,10 +121,9 @@ jobs:
 
   trivy:
     name: Trivy Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      security-events: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -135,14 +133,14 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: '${{ inputs.working-directory }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           exit-code: '1'
 
   rust-cli:
+    name: Verify Rust CLI
     if: inputs.language == 'rust'
     needs: [validate-input, actionlint]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
@@ -152,27 +150,35 @@ jobs:
           persist-credentials: false
       - run: rustup component add clippy rustfmt
       - run: cargo fmt --all --check
-      - run: cargo clippy -p "${{ inputs.package }}" --all-targets -- -D warnings
-      - run: cargo test -p "${{ inputs.package }}" --locked
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: cargo clippy -p "${PACKAGE}" --all-targets -- -D warnings
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: cargo test -p "${PACKAGE}" --locked
       - name: Install dependency verification tools
         run: |
-          cargo install cargo-audit --locked
-          cargo install cargo-machete --locked
+          cargo install cargo-audit --version 0.22.2 --locked
+          cargo install cargo-machete --version 0.9.2 --locked
       - run: cargo audit
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
         with:
           manifest-path: ${{ inputs.working-directory }}/Cargo.toml
           command: check
           arguments: --all-features
           command-arguments: advisories sources
       - run: cargo machete
-      - run: cargo build -p "${{ inputs.package }}" --release --locked
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: cargo build -p "${PACKAGE}" --release --locked
       - name: Stage artifact and checksum
+        env:
+          PACKAGE: ${{ inputs.package }}
         run: |
           mkdir -p admin-cli-dist
-          install -m 0755 "target/release/${{ inputs.package }}" "admin-cli-dist/${{ inputs.package }}"
-          (cd admin-cli-dist && sha256sum "${{ inputs.package }}" > "${{ inputs.package }}.sha256")
-      - uses: anchore/sbom-action@v0
+          install -m 0755 "target/release/${PACKAGE}" "admin-cli-dist/${PACKAGE}"
+          (cd admin-cli-dist && sha256sum "${PACKAGE}" > "${PACKAGE}.sha256")
+      - uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           path: ${{ inputs.working-directory }}/admin-cli-dist
           format: spdx-json
@@ -184,9 +190,10 @@ jobs:
           if-no-files-found: error
 
   java-cli:
+    name: Verify Java CLI
     if: inputs.language == 'java'
     needs: [validate-input, actionlint]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
@@ -199,10 +206,16 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
-      - run: ./gradlew ":${{ inputs.package }}:test" ":${{ inputs.package }}:installDist" --no-daemon
-      - run: tar -C "${{ inputs.package }}/build/install" -czf "${{ inputs.package }}.tar.gz" "${{ inputs.package }}"
-      - run: sha256sum "${{ inputs.package }}.tar.gz" > "${{ inputs.package }}.tar.gz.sha256"
-      - uses: anchore/sbom-action@v0
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: ./gradlew ":${PACKAGE}:test" ":${PACKAGE}:installDist" --no-daemon
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: tar -C "${PACKAGE}/build/install" -czf "${PACKAGE}.tar.gz" "${PACKAGE}"
+      - env:
+          PACKAGE: ${{ inputs.package }}
+        run: sha256sum "${PACKAGE}.tar.gz" > "${PACKAGE}.tar.gz.sha256"
+      - uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           path: ${{ inputs.working-directory }}/${{ inputs.package }}/build/install/${{ inputs.package }}
           format: spdx-json

@@ -25,7 +25,8 @@ permissions:
 
 jobs:
   flutter:
-    runs-on: ubuntu-latest
+    name: Verify Flutter client
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
@@ -35,6 +36,7 @@ jobs:
           persist-credentials: false
       - name: Validate working-directory
         shell: bash
+        working-directory: .
         env:
           WD: ${{ inputs.working-directory }}
         run: |
@@ -49,6 +51,10 @@ jobs:
           cache: true
       - run: flutter pub get
       - if: inputs.enforce-analyze
-        run: flutter analyze ${{ inputs.analyze-arguments }}
+        env:
+          ANALYZE_ARGUMENTS: ${{ inputs.analyze-arguments }}
+        run: |
+          read -r -a arguments <<< "${ANALYZE_ARGUMENTS}"
+          flutter analyze "${arguments[@]}"
       - if: inputs.run-tests
         run: flutter test
