@@ -6,23 +6,23 @@
   "components": {
     "core": {
       "repository": "Daniel-Astrofer/users-authentication",
-      "ref": "7b81a76e92ff76813e51f9e08995112603abd600"
+      "ref": "884c7062f4758d2c771c079410fba900e7826c5e"
     },
     "vault": {
       "repository": "Daniel-Astrofer/vault",
-      "ref": "4e8edd70cb194f6330567e8275d59fc5d34ed362"
+      "ref": "735c76033feaff12287569f3f5b00183a400a269"
     },
     "node": {
       "repository": "Daniel-Astrofer/discoveryng-node",
-      "ref": "747eca37d6a484862a2cb6b8fbbb33ba18644598"
+      "ref": "1b27195d481c5e7233830f219bdbcb950155a590"
     },
     "contracts": {
       "repository": "Daniel-Astrofer/contracts",
-      "ref": "ce2f3d6d623baa4acea1faa27a78fb60ceac822f"
+      "ref": "ecf2372eeb4338ba2cdee3040f696d3ff7f0f0cc"
     },
     "clients": {
       "repository": "Daniel-Astrofer/clients",
-      "ref": "2135b357aa1ccbe92dc8d464c36a294b44da8aec"
+      "ref": "2a22edd2f768dd8aad486634bd4a653192477db0"
     }
   }
 }
