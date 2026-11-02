@@ -1,0 +1,144 @@
+name: Reusable Cross-Repository Compatibility
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Component represented by the caller repository
+        required: true
+        type: string
+      baseline:
+        description: Immutable released baseline or moving edge baseline
+        required: false
+        default: released
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve ${{ inputs.baseline }} baseline
+    runs-on: ubuntu-24.04
+    outputs:
+      core: ${{ steps.refs.outputs.core }}
+      vault: ${{ steps.refs.outputs.vault }}
+      node: ${{ steps.refs.outputs.node }}
+      contracts: ${{ steps.refs.outputs.contracts }}
+      clients: ${{ steps.refs.outputs.clients }}
+    steps:
+      - name: Validate baseline
+        shell: bash
+        env:
+          BASELINE: ${{ inputs.baseline }}
+        run: |
+          if [[ "${BASELINE}" != "released" && "${BASELINE}" != "edge" ]]; then
+            echo "::error::baseline must be released or edge"
+            exit 1
+          fi
+
+      - name: Check out compatibility policy
+        if: inputs.baseline == 'released'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/.github
+          ref: ${{ github.workflow_sha }}
+          path: policy
+          persist-credentials: false
+
+      - name: Resolve immutable revisions
+        id: refs
+        shell: bash
+        env:
+          BASELINE: ${{ inputs.baseline }}
+        run: |
+          set -euo pipefail
+          components=(core vault node contracts clients)
+
+          if [[ "${BASELINE}" == "edge" ]]; then
+            for component in "${components[@]}"; do
+              echo "${component}=main" >> "${GITHUB_OUTPUT}"
+            done
+            exit 0
+          fi
+
+          manifest="policy/compatibility/released.json"
+          jq -e '
+            .schema_version == 1
+            and .baseline == "released"
+            and (.components | type == "object")
+          ' "${manifest}" >/dev/null
+
+          for component in "${components[@]}"; do
+            ref="$(jq -er --arg component "${component}" '.components[$component].ref' "${manifest}")"
+            if [[ ! "${ref}" =~ ^[0-9a-f]{40}$ && ! "${ref}" =~ ^refs/tags/[^[:space:]]+$ ]]; then
+              echo "::error file=${manifest}::${component} ref is not an immutable commit or tag ref"
+              exit 1
+            fi
+            echo "${component}=${ref}" >> "${GITHUB_OUTPUT}"
+          done
+
+  compatibility:
+    name: Contract compatibility
+    needs: resolve
+    runs-on: ubuntu-24.04
+    continue-on-error: ${{ inputs.baseline == 'edge' }}
+    steps:
+      - name: Check out caller revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: caller
+          persist-credentials: false
+
+      - name: Check out compatibility policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/.github
+          ref: ${{ github.workflow_sha }}
+          path: policy
+          persist-credentials: false
+
+      - name: Check out Core baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/users-authentication
+          ref: ${{ needs.resolve.outputs.core }}
+          path: ecosystem/core
+          persist-credentials: false
+
+      - name: Check out Vault baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/vault
+          ref: ${{ needs.resolve.outputs.vault }}
+          path: ecosystem/vault
+          persist-credentials: false
+
+      - name: Check out Node baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/discoveryng-node
+          ref: ${{ needs.resolve.outputs.node }}
+          path: ecosystem/node
+          persist-credentials: false
+
+      - name: Check out Contracts baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/contracts
+          ref: ${{ needs.resolve.outputs.contracts }}
+          path: ecosystem/contracts
+          persist-credentials: false
+
+      - name: Check out Clients baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Daniel-Astrofer/clients
+          ref: ${{ needs.resolve.outputs.clients }}
+          path: ecosystem/clients
+          persist-credentials: false
+
+      - name: Validate compatibility matrix
+        env:
+          CALLER_COMPONENT: ${{ inputs.component }}
+        run: policy/scripts/check-compatibility.sh "${CALLER_COMPONENT}"
