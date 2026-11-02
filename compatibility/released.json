@@ -2,27 +2,27 @@
   "schema_version": 1,
   "baseline": "released",
   "status": "production-candidate",
-  "updated_at": "2026-07-30",
+  "updated_at": "2026-11-02",
   "components": {
     "core": {
       "repository": "Daniel-Astrofer/users-authentication",
-      "ref": "405d9ee3ef06a1cd36c20b67b6d04af3667e64ae"
+      "ref": "7b81a76e92ff76813e51f9e08995112603abd600"
     },
     "vault": {
       "repository": "Daniel-Astrofer/vault",
-      "ref": "a94f3966acb6dbcf843e4463b3de4ec967565731"
+      "ref": "4e8edd70cb194f6330567e8275d59fc5d34ed362"
     },
     "node": {
       "repository": "Daniel-Astrofer/discoveryng-node",
-      "ref": "ddcc47ee061ebcc2a53d597d5f2553314434dce1"
+      "ref": "747eca37d6a484862a2cb6b8fbbb33ba18644598"
     },
     "contracts": {
       "repository": "Daniel-Astrofer/contracts",
-      "ref": "1205f5b46de0aea6d8c0cc4df0ffbe6b131aeb39"
+      "ref": "ce2f3d6d623baa4acea1faa27a78fb60ceac822f"
     },
     "clients": {
       "repository": "Daniel-Astrofer/clients",
-      "ref": "f245aa6459f7162f600a5d290cd2894ff63ca4d4"
+      "ref": "2135b357aa1ccbe92dc8d464c36a294b44da8aec"
     }
   }
 }
